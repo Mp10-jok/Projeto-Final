@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wayne Industries - Seguranca</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="page">
+    <section class="login-box" id="loginSection">
+      <div>
+        <p class="eyebrow">Wayne Industries</p>
+        <h1>Sistema de Gerenciamento de Seguranca</h1>
+        <p class="subtitle">Controle simples de acesso, recursos e monitoramento interno.</p>
+      </div>
+
+      <form id="loginForm" class="form-card">
+        <label for="username">Usuario</label>
+        <input id="username" name="username" type="text" placeholder="Digite o usuario" required>
+
+        <label for="password">Senha</label>
+        <input id="password" name="password" type="password" placeholder="Digite a senha" required>
+
+        <button type="submit">Entrar</button>
+        <p id="loginMessage" class="message"></p>
+      </form>
+
+      <div class="hint-card">
+        <h2>Usuarios para teste</h2>
+        <p><strong>Funcionario:</strong> bruce / 123</p>
+        <p><strong>Gerente:</strong> lucius / 123</p>
+        <p><strong>Administrador:</strong> alfred / 123</p>
+      </div>
+    </section>
+
+    <main id="appSection" class="hidden">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Painel interno</p>
+          <h2 id="welcomeTitle">Bem-vindo</h2>
+        </div>
+        <button id="logoutButton" class="secondary-button">Sair</button>
+      </header>
+
+      <section class="dashboard-grid">
+        <article class="card">
+          <h3>Usuarios ativos</h3>
+          <p class="big-number" id="usersCount">0</p>
+        </article>
+        <article class="card">
+          <h3>Recursos cadastrados</h3>
+          <p class="big-number" id="resourcesCount">0</p>
+        </article>
+        <article class="card">
+          <h3>Acessos liberados</h3>
+          <p class="big-number" id="allowedCount">0</p>
+        </article>
+        <article class="card">
+          <h3>Acessos bloqueados</h3>
+          <p class="big-number" id="blockedCount">0</p>
+        </article>
+      </section>
+
+      <section class="content-grid">
+        <article class="card">
+          <h3>Controle de acesso</h3>
+          <p>Verificacao de entrada nas areas restritas das Industrias Wayne.</p>
+
+          <label for="areaSelect">Selecione uma area</label>
+          <select id="areaSelect"></select>
+          <button id="checkAccessButton">Verificar acesso</button>
+
+          <p id="accessResult" class="message"></p>
+        </article>
+
+        <article class="card">
+          <h3>Perfil do usuario</h3>
+          <div id="userInfo" class="info-list"></div>
+        </article>
+      </section>
+
+      <section class="card">
+        <div class="section-title">
+          <div>
+            <h3>Gestao de recursos</h3>
+            <p>Cadastro simples de equipamentos, veiculos e dispositivos de seguranca.</p>
+          </div>
+        </div>
+
+        <form id="resourceForm" class="resource-form">
+          <input type="hidden" id="resourceId">
+
+          <div>
+            <label for="resourceName">Nome</label>
+            <input id="resourceName" type="text" required>
+          </div>
+
+          <div>
+            <label for="resourceType">Tipo</label>
+            <select id="resourceType" required>
+              <option value="Equipamento">Equipamento</option>
+              <option value="Veiculo">Veiculo</option>
+              <option value="Dispositivo de seguranca">Dispositivo de seguranca</option>
+            </select>
+          </div>
+
+          <div>
+            <label for="resourceStatus">Status</label>
+            <select id="resourceStatus" required>
+              <option value="Disponivel">Disponivel</option>
+              <option value="Em uso">Em uso</option>
+              <option value="Manutencao">Manutencao</option>
+            </select>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" id="saveResourceButton">Salvar recurso</button>
+            <button type="button" id="cancelEditButton" class="secondary-button">Cancelar</button>
+          </div>
+        </form>
+
+        <p id="resourceMessage" class="message"></p>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Nome</th>
+                <th>Tipo</th>
+                <th>Status</th>
+                <th>Acoes</th>
+              </tr>
+            </thead>
+            <tbody id="resourceTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="card">
+        <h3>Atividades recentes</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Usuario</th>
+                <th>Perfil</th>
+                <th>Acao</th>
+                <th>Resultado</th>
+              </tr>
+            </thead>
+            <tbody id="activityTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,194 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
+}
+
+body {
+  background: linear-gradient(135deg, #d6dde8, #f3f5f8);
+  color: #1d2430;
+  min-height: 100vh;
+}
+
+.page {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.login-box,
+.card,
+.form-card,
+.hint-card {
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(18, 29, 46, 0.08);
+}
+
+.login-box {
+  display: grid;
+  gap: 20px;
+  padding: 32px;
+  margin-top: 40px;
+}
+
+.eyebrow {
+  color: #4c5d78;
+  font-size: 0.9rem;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+
+h1,
+h2,
+h3 {
+  margin-bottom: 10px;
+}
+
+.subtitle {
+  color: #57657d;
+}
+
+.form-card,
+.hint-card,
+.card {
+  padding: 20px;
+}
+
+form {
+  display: grid;
+  gap: 12px;
+}
+
+input,
+select,
+button {
+  border-radius: 8px;
+  border: 1px solid #c6ced8;
+  padding: 10px 12px;
+  font-size: 1rem;
+}
+
+button {
+  background: #1e3a5f;
+  border: none;
+  color: #ffffff;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+button:hover {
+  background: #152c4a;
+}
+
+.secondary-button {
+  background: #dce3eb;
+  color: #223047;
+}
+
+.secondary-button:hover {
+  background: #cbd6e2;
+}
+
+.hidden {
+  display: none;
+}
+
+.topbar,
+.section-title,
+.form-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.topbar {
+  margin: 20px 0;
+}
+
+.dashboard-grid,
+.content-grid {
+  display: grid;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.dashboard-grid {
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+.content-grid {
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+.big-number {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #1e3a5f;
+}
+
+.info-list p,
+.hint-card p {
+  margin-bottom: 8px;
+}
+
+.resource-form {
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  margin: 16px 0;
+}
+
+.form-actions {
+  align-self: end;
+}
+
+.table-wrapper {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  border-bottom: 1px solid #e4e8ee;
+  padding: 12px 8px;
+  text-align: left;
+}
+
+.message {
+  min-height: 20px;
+  font-weight: bold;
+}
+
+.success {
+  color: #1f7a39;
+}
+
+.error {
+  color: #b42318;
+}
+
+.warning {
+  color: #9a6700;
+}
+
+@media (max-width: 700px) {
+  .page {
+    padding: 16px;
+  }
+
+  .login-box {
+    padding: 20px;
+  }
+
+  .topbar,
+  .section-title,
+  .form-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
