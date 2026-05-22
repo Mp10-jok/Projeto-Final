@@ -66,15 +66,15 @@ const resourcePanel = document.getElementById("resourcePanel");
 const activityPanel = document.getElementById("activityPanel");
 
 function isEmployee() {
-  return currentUser.role === "Funcionario";
+  return currentUser && currentUser.role === "Funcionario";
 }
 
 function isManager() {
-  return currentUser.role === "Gerente";
+  return currentUser && currentUser.role === "Gerente";
 }
 
 function isSecurityAdmin() {
-  return currentUser.role === "Administrador de seguranca";
+  return currentUser && currentUser.role === "Administrador de seguranca";
 }
 
 function setMessage(element, text, type) {
@@ -127,7 +127,7 @@ function updateRoleDescription() {
     return;
   }
 
-  roleDescription.textContent = "Perfil de administrador: acesso total aos paines de seguranca e gestao.";
+  roleDescription.textContent = "Perfil de administrador: acesso total aos paineis de seguranca e gestao.";
 }
 
 function applyRolePanels() {
@@ -186,10 +186,6 @@ function resetResourceForm() {
 }
 
 function updateResourcePermissions() {
-  if (!canManageResources()) {
-    return;
-  }
-
   const disabled = !canManageResources();
 
   resourceName.disabled = disabled;
@@ -242,6 +238,9 @@ logoutButton.addEventListener("click", () => {
   loginForm.reset();
   resetResourceForm();
   accessResult.textContent = "";
+  roleDescription.textContent = "";
+  userInfo.innerHTML = "";
+  resourceMessage.textContent = "";
   loginSection.classList.remove("hidden");
   appSection.classList.add("hidden");
 });
