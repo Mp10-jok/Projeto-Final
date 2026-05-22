@@ -50,6 +50,11 @@ h3 {
   color: #57657d;
 }
 
+#roleDescription {
+  margin-top: 4px;
+  font-weight: bold;
+}
+
 .form-card,
 .hint-card,
 .card {

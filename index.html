@@ -39,31 +39,32 @@
         <div>
           <p class="eyebrow">Painel interno</p>
           <h2 id="welcomeTitle">Bem-vindo</h2>
+          <p id="roleDescription" class="subtitle"></p>
         </div>
         <button id="logoutButton" class="secondary-button">Sair</button>
       </header>
 
       <section class="dashboard-grid">
-        <article class="card">
+        <article class="card" id="cardUsers">
           <h3>Usuarios ativos</h3>
           <p class="big-number" id="usersCount">0</p>
         </article>
-        <article class="card">
+        <article class="card" id="cardResources">
           <h3>Recursos cadastrados</h3>
           <p class="big-number" id="resourcesCount">0</p>
         </article>
-        <article class="card">
+        <article class="card" id="cardAllowed">
           <h3>Acessos liberados</h3>
           <p class="big-number" id="allowedCount">0</p>
         </article>
-        <article class="card">
+        <article class="card" id="cardBlocked">
           <h3>Acessos bloqueados</h3>
           <p class="big-number" id="blockedCount">0</p>
         </article>
       </section>
 
       <section class="content-grid">
-        <article class="card">
+        <article class="card" id="accessPanel">
           <h3>Controle de acesso</h3>
           <p>Verificacao de entrada nas areas restritas das Industrias Wayne.</p>
 
@@ -74,13 +75,13 @@
           <p id="accessResult" class="message"></p>
         </article>
 
-        <article class="card">
+        <article class="card" id="profilePanel">
           <h3>Perfil do usuario</h3>
           <div id="userInfo" class="info-list"></div>
         </article>
       </section>
 
-      <section class="card">
+      <section class="card" id="resourcePanel">
         <div class="section-title">
           <div>
             <h3>Gestao de recursos</h3>
@@ -137,7 +138,7 @@
         </div>
       </section>
 
-      <section class="card">
+      <section class="card" id="activityPanel">
         <h3>Atividades recentes</h3>
         <div class="table-wrapper">
           <table>

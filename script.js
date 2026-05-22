@@ -39,6 +39,7 @@ const appSection = document.getElementById("appSection");
 const loginForm = document.getElementById("loginForm");
 const loginMessage = document.getElementById("loginMessage");
 const welcomeTitle = document.getElementById("welcomeTitle");
+const roleDescription = document.getElementById("roleDescription");
 const userInfo = document.getElementById("userInfo");
 const logoutButton = document.getElementById("logoutButton");
 const areaSelect = document.getElementById("areaSelect");
@@ -57,6 +58,24 @@ const cancelEditButton = document.getElementById("cancelEditButton");
 const resourceMessage = document.getElementById("resourceMessage");
 const resourceTableBody = document.getElementById("resourceTableBody");
 const activityTableBody = document.getElementById("activityTableBody");
+const cardUsers = document.getElementById("cardUsers");
+const cardResources = document.getElementById("cardResources");
+const cardAllowed = document.getElementById("cardAllowed");
+const cardBlocked = document.getElementById("cardBlocked");
+const resourcePanel = document.getElementById("resourcePanel");
+const activityPanel = document.getElementById("activityPanel");
+
+function isEmployee() {
+  return currentUser.role === "Funcionario";
+}
+
+function isManager() {
+  return currentUser.role === "Gerente";
+}
+
+function isSecurityAdmin() {
+  return currentUser.role === "Administrador de seguranca";
+}
 
 function setMessage(element, text, type) {
   element.textContent = text;
@@ -90,7 +109,34 @@ function renderUserInfo() {
 }
 
 function canManageResources() {
-  return currentUser.role === "Gerente" || currentUser.role === "Administrador de seguranca";
+  return isManager() || isSecurityAdmin();
+}
+
+function canViewActivities() {
+  return isManager() || isSecurityAdmin();
+}
+
+function updateRoleDescription() {
+  if (isEmployee()) {
+    roleDescription.textContent = "Perfil basico: acesso apenas ao controle de entrada e aos seus dados.";
+    return;
+  }
+
+  if (isManager()) {
+    roleDescription.textContent = "Perfil de gerente: acesso ao painel de recursos e ao historico de atividades.";
+    return;
+  }
+
+  roleDescription.textContent = "Perfil de administrador: acesso total aos paines de seguranca e gestao.";
+}
+
+function applyRolePanels() {
+  cardUsers.classList.toggle("hidden", isEmployee());
+  cardResources.classList.toggle("hidden", isEmployee());
+  cardAllowed.classList.toggle("hidden", false);
+  cardBlocked.classList.toggle("hidden", isEmployee());
+  resourcePanel.classList.toggle("hidden", !canManageResources());
+  activityPanel.classList.toggle("hidden", !canViewActivities());
 }
 
 function renderResources() {
@@ -140,6 +186,10 @@ function resetResourceForm() {
 }
 
 function updateResourcePermissions() {
+  if (!canManageResources()) {
+    return;
+  }
+
   const disabled = !canManageResources();
 
   resourceName.disabled = disabled;
@@ -159,6 +209,8 @@ function showApp() {
   loginSection.classList.add("hidden");
   appSection.classList.remove("hidden");
   welcomeTitle.textContent = `Bem-vindo, ${currentUser.username}`;
+  updateRoleDescription();
+  applyRolePanels();
   renderUserInfo();
   populateAreas();
   updateDashboard();
