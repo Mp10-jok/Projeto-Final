@@ -27,13 +27,13 @@
       "result": "Sucesso"
     },
     {
-      "user": "lucius",
+      "user": "bruce",
       "role": "Gerente",
       "action": "Acesso ao Laboratorio",
       "result": "Liberado"
     },
     {
-      "user": "bruce",
+      "user": "marcio",
       "role": "Funcionario",
       "action": "Acesso a Sala de servidores",
       "result": "Bloqueado"

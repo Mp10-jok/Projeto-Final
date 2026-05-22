@@ -8,13 +8,13 @@ const DATABASE_FILE = path.join(BASE_DIR, "database.json");
 
 const users = [
   {
-    username: "bruce",
+    username: "marcio",
     password: "123",
     role: "Funcionario",
     allowedAreas: ["Recepcao", "Escritorio"]
   },
   {
-    username: "lucius",
+    username: "bruce",
     password: "123",
     role: "Gerente",
     allowedAreas: ["Recepcao", "Escritorio", "Laboratorio"]
@@ -37,8 +37,8 @@ const defaultDatabase = {
   ],
   activities: [
     { user: "alfred", role: "Administrador de seguranca", action: "Atualizou inventario", result: "Sucesso" },
-    { user: "lucius", role: "Gerente", action: "Acesso ao Laboratorio", result: "Liberado" },
-    { user: "bruce", role: "Funcionario", action: "Acesso a Sala de servidores", result: "Bloqueado" }
+    { user: "bruce", role: "Gerente", action: "Acesso ao Laboratorio", result: "Liberado" },
+    { user: "marcio", role: "Funcionario", action: "Acesso a Sala de servidores", result: "Bloqueado" }
   ]
 };
 
