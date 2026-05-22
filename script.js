@@ -20,19 +20,25 @@ const users = [
 ];
 
 const areas = ["Recepcao", "Escritorio", "Laboratorio", "Sala de servidores", "Garagem"];
-
-let currentUser = null;
-let resources = [
+const STORAGE_KEYS = {
+  resources: "wayne_resources",
+  activities: "wayne_activities",
+  session: "wayne_session"
+};
+const defaultResources = [
   { id: 1, name: "Camera Intelbras", type: "Dispositivo de seguranca", status: "Disponivel" },
   { id: 2, name: "Batmovel de ronda", type: "Veiculo", status: "Em uso" },
   { id: 3, name: "Radio comunicador", type: "Equipamento", status: "Manutencao" }
 ];
-
-let activities = [
+const defaultActivities = [
   { user: "alfred", role: "Administrador de seguranca", action: "Atualizou inventario", result: "Sucesso" },
   { user: "lucius", role: "Gerente", action: "Acesso ao Laboratorio", result: "Liberado" },
   { user: "bruce", role: "Funcionario", action: "Acesso a Sala de servidores", result: "Bloqueado" }
 ];
+
+let currentUser = null;
+let resources = [];
+let activities = [];
 
 const loginSection = document.getElementById("loginSection");
 const appSection = document.getElementById("appSection");
@@ -40,6 +46,7 @@ const loginForm = document.getElementById("loginForm");
 const loginMessage = document.getElementById("loginMessage");
 const welcomeTitle = document.getElementById("welcomeTitle");
 const roleDescription = document.getElementById("roleDescription");
+const databaseInfo = document.getElementById("databaseInfo");
 const userInfo = document.getElementById("userInfo");
 const logoutButton = document.getElementById("logoutButton");
 const areaSelect = document.getElementById("areaSelect");
@@ -64,6 +71,54 @@ const cardAllowed = document.getElementById("cardAllowed");
 const cardBlocked = document.getElementById("cardBlocked");
 const resourcePanel = document.getElementById("resourcePanel");
 const activityPanel = document.getElementById("activityPanel");
+const resetDatabaseButton = document.getElementById("resetDatabaseButton");
+
+function cloneData(data) {
+  return JSON.parse(JSON.stringify(data));
+}
+
+function saveDatabase() {
+  localStorage.setItem(STORAGE_KEYS.resources, JSON.stringify(resources));
+  localStorage.setItem(STORAGE_KEYS.activities, JSON.stringify(activities));
+}
+
+function loadDatabase() {
+  const savedResources = localStorage.getItem(STORAGE_KEYS.resources);
+  const savedActivities = localStorage.getItem(STORAGE_KEYS.activities);
+
+  resources = savedResources ? JSON.parse(savedResources) : cloneData(defaultResources);
+  activities = savedActivities ? JSON.parse(savedActivities) : cloneData(defaultActivities);
+  saveDatabase();
+}
+
+function saveSession() {
+  if (!currentUser) {
+    localStorage.removeItem(STORAGE_KEYS.session);
+    return;
+  }
+
+  localStorage.setItem(STORAGE_KEYS.session, currentUser.username);
+}
+
+function loadSession() {
+  const savedUsername = localStorage.getItem(STORAGE_KEYS.session);
+
+  if (!savedUsername) {
+    return;
+  }
+
+  const savedUser = users.find((item) => item.username === savedUsername);
+
+  if (savedUser) {
+    currentUser = savedUser;
+  }
+}
+
+function resetDatabase() {
+  resources = cloneData(defaultResources);
+  activities = cloneData(defaultActivities);
+  saveDatabase();
+}
 
 function isEmployee() {
   return currentUser && currentUser.role === "Funcionario";
@@ -130,6 +185,10 @@ function updateRoleDescription() {
   roleDescription.textContent = "Perfil de administrador: acesso total aos paineis de seguranca e gestao.";
 }
 
+function updateDatabaseInfo() {
+  databaseInfo.textContent = "Banco local ativo: recursos, atividades e sessao ficam salvos no navegador.";
+}
+
 function applyRolePanels() {
   cardUsers.classList.toggle("hidden", isEmployee());
   cardResources.classList.toggle("hidden", isEmployee());
@@ -137,6 +196,7 @@ function applyRolePanels() {
   cardBlocked.classList.toggle("hidden", isEmployee());
   resourcePanel.classList.toggle("hidden", !canManageResources());
   activityPanel.classList.toggle("hidden", !canViewActivities());
+  resetDatabaseButton.classList.toggle("hidden", !canManageResources());
 }
 
 function renderResources() {
@@ -206,6 +266,7 @@ function showApp() {
   appSection.classList.remove("hidden");
   welcomeTitle.textContent = `Bem-vindo, ${currentUser.username}`;
   updateRoleDescription();
+  updateDatabaseInfo();
   applyRolePanels();
   renderUserInfo();
   populateAreas();
@@ -229,16 +290,19 @@ loginForm.addEventListener("submit", (event) => {
   }
 
   currentUser = user;
+  saveSession();
   setMessage(loginMessage, "", "");
   showApp();
 });
 
 logoutButton.addEventListener("click", () => {
   currentUser = null;
+  saveSession();
   loginForm.reset();
   resetResourceForm();
   accessResult.textContent = "";
   roleDescription.textContent = "";
+  databaseInfo.textContent = "";
   userInfo.innerHTML = "";
   resourceMessage.textContent = "";
   loginSection.classList.remove("hidden");
@@ -267,6 +331,7 @@ checkAccessButton.addEventListener("click", () => {
     });
   }
 
+  saveDatabase();
   updateDashboard();
   renderActivities();
 });
@@ -309,6 +374,7 @@ resourceForm.addEventListener("submit", (event) => {
     });
   }
 
+  saveDatabase();
   resetResourceForm();
   updateDashboard();
   renderResources();
@@ -356,8 +422,28 @@ window.deleteResource = function deleteResource(id) {
     result: "Sucesso"
   });
 
+  saveDatabase();
   resetResourceForm();
   updateDashboard();
   renderResources();
   renderActivities();
 };
+
+resetDatabaseButton.addEventListener("click", () => {
+  if (!canManageResources()) {
+    return;
+  }
+
+  resetDatabase();
+  setMessage(resourceMessage, "Banco local restaurado com os dados iniciais.", "success");
+  updateDashboard();
+  renderResources();
+  renderActivities();
+});
+
+loadDatabase();
+loadSession();
+
+if (currentUser) {
+  showApp();
+}
