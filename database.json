@@ -1,0 +1,42 @@
+{
+  "resources": [
+    {
+      "id": 1,
+      "name": "Camera Intelbras",
+      "type": "Dispositivo de seguranca",
+      "status": "Disponivel"
+    },
+    {
+      "id": 2,
+      "name": "Batmovel de ronda",
+      "type": "Veiculo",
+      "status": "Em uso"
+    },
+    {
+      "id": 3,
+      "name": "Radio comunicador",
+      "type": "Equipamento",
+      "status": "Manutencao"
+    }
+  ],
+  "activities": [
+    {
+      "user": "alfred",
+      "role": "Administrador de seguranca",
+      "action": "Atualizou inventario",
+      "result": "Sucesso"
+    },
+    {
+      "user": "lucius",
+      "role": "Gerente",
+      "action": "Acesso ao Laboratorio",
+      "result": "Liberado"
+    },
+    {
+      "user": "bruce",
+      "role": "Funcionario",
+      "action": "Acesso a Sala de servidores",
+      "result": "Bloqueado"
+    }
+  ]
+}

@@ -1,40 +1,9 @@
-const users = [
-  {
-    username: "bruce",
-    password: "123",
-    role: "Funcionario",
-    allowedAreas: ["Recepcao", "Escritorio"]
-  },
-  {
-    username: "lucius",
-    password: "123",
-    role: "Gerente",
-    allowedAreas: ["Recepcao", "Escritorio", "Laboratorio"]
-  },
-  {
-    username: "alfred",
-    password: "123",
-    role: "Administrador de seguranca",
-    allowedAreas: ["Recepcao", "Escritorio", "Laboratorio", "Sala de servidores", "Garagem"]
-  }
-];
+const SESSION_KEY = "wayne_current_user";
 
-const areas = ["Recepcao", "Escritorio", "Laboratorio", "Sala de servidores", "Garagem"];
-const STORAGE_KEYS = {
-  resources: "wayne_resources",
-  activities: "wayne_activities",
-  session: "wayne_session"
+const appConfig = {
+  areas: [],
+  totalUsers: 0
 };
-const defaultResources = [
-  { id: 1, name: "Camera Intelbras", type: "Dispositivo de seguranca", status: "Disponivel" },
-  { id: 2, name: "Batmovel de ronda", type: "Veiculo", status: "Em uso" },
-  { id: 3, name: "Radio comunicador", type: "Equipamento", status: "Manutencao" }
-];
-const defaultActivities = [
-  { user: "alfred", role: "Administrador de seguranca", action: "Atualizou inventario", result: "Sucesso" },
-  { user: "lucius", role: "Gerente", action: "Acesso ao Laboratorio", result: "Liberado" },
-  { user: "bruce", role: "Funcionario", action: "Acesso a Sala de servidores", result: "Bloqueado" }
-];
 
 let currentUser = null;
 let resources = [];
@@ -73,53 +42,6 @@ const resourcePanel = document.getElementById("resourcePanel");
 const activityPanel = document.getElementById("activityPanel");
 const resetDatabaseButton = document.getElementById("resetDatabaseButton");
 
-function cloneData(data) {
-  return JSON.parse(JSON.stringify(data));
-}
-
-function saveDatabase() {
-  localStorage.setItem(STORAGE_KEYS.resources, JSON.stringify(resources));
-  localStorage.setItem(STORAGE_KEYS.activities, JSON.stringify(activities));
-}
-
-function loadDatabase() {
-  const savedResources = localStorage.getItem(STORAGE_KEYS.resources);
-  const savedActivities = localStorage.getItem(STORAGE_KEYS.activities);
-
-  resources = savedResources ? JSON.parse(savedResources) : cloneData(defaultResources);
-  activities = savedActivities ? JSON.parse(savedActivities) : cloneData(defaultActivities);
-  saveDatabase();
-}
-
-function saveSession() {
-  if (!currentUser) {
-    localStorage.removeItem(STORAGE_KEYS.session);
-    return;
-  }
-
-  localStorage.setItem(STORAGE_KEYS.session, currentUser.username);
-}
-
-function loadSession() {
-  const savedUsername = localStorage.getItem(STORAGE_KEYS.session);
-
-  if (!savedUsername) {
-    return;
-  }
-
-  const savedUser = users.find((item) => item.username === savedUsername);
-
-  if (savedUser) {
-    currentUser = savedUser;
-  }
-}
-
-function resetDatabase() {
-  resources = cloneData(defaultResources);
-  activities = cloneData(defaultActivities);
-  saveDatabase();
-}
-
 function isEmployee() {
   return currentUser && currentUser.role === "Funcionario";
 }
@@ -132,15 +54,75 @@ function isSecurityAdmin() {
   return currentUser && currentUser.role === "Administrador de seguranca";
 }
 
+function canManageResources() {
+  return isManager() || isSecurityAdmin();
+}
+
+function canViewActivities() {
+  return isManager() || isSecurityAdmin();
+}
+
 function setMessage(element, text, type) {
   element.textContent = text;
   element.className = `message ${type}`;
 }
 
+async function apiRequest(path, options = {}) {
+  const response = await fetch(path, {
+    headers: {
+      "Content-Type": "application/json"
+    },
+    ...options
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.message || "Erro ao acessar o servidor.");
+  }
+
+  return data;
+}
+
+function saveSession() {
+  if (!currentUser) {
+    localStorage.removeItem(SESSION_KEY);
+    return;
+  }
+
+  localStorage.setItem(SESSION_KEY, JSON.stringify(currentUser));
+}
+
+function loadSession() {
+  const savedUser = localStorage.getItem(SESSION_KEY);
+
+  if (!savedUser) {
+    return;
+  }
+
+  currentUser = JSON.parse(savedUser);
+}
+
+async function loadConfig() {
+  const data = await apiRequest("/api/config");
+  appConfig.areas = data.areas;
+  appConfig.totalUsers = data.totalUsers;
+}
+
+async function loadData() {
+  const [resourceData, activityData] = await Promise.all([
+    apiRequest("/api/resources"),
+    apiRequest("/api/activities")
+  ]);
+
+  resources = resourceData.resources;
+  activities = activityData.activities;
+}
+
 function populateAreas() {
   areaSelect.innerHTML = "";
 
-  areas.forEach((area) => {
+  appConfig.areas.forEach((area) => {
     const option = document.createElement("option");
     option.value = area;
     option.textContent = area;
@@ -149,7 +131,7 @@ function populateAreas() {
 }
 
 function updateDashboard() {
-  usersCount.textContent = users.length;
+  usersCount.textContent = appConfig.totalUsers;
   resourcesCount.textContent = resources.length;
   allowedCount.textContent = activities.filter((item) => item.result === "Liberado" || item.result === "Sucesso").length;
   blockedCount.textContent = activities.filter((item) => item.result === "Bloqueado").length;
@@ -161,14 +143,6 @@ function renderUserInfo() {
     <p><strong>Perfil:</strong> ${currentUser.role}</p>
     <p><strong>Areas permitidas:</strong> ${currentUser.allowedAreas.join(", ")}</p>
   `;
-}
-
-function canManageResources() {
-  return isManager() || isSecurityAdmin();
-}
-
-function canViewActivities() {
-  return isManager() || isSecurityAdmin();
 }
 
 function updateRoleDescription() {
@@ -186,7 +160,7 @@ function updateRoleDescription() {
 }
 
 function updateDatabaseInfo() {
-  databaseInfo.textContent = "Banco local ativo: recursos, atividades e sessao ficam salvos no navegador.";
+  databaseInfo.textContent = "Backend local ativo: os dados agora sao salvos em um arquivo simples no servidor.";
 }
 
 function applyRolePanels() {
@@ -210,7 +184,7 @@ function renderResources() {
         <button onclick="editResource(${resource.id})">Editar</button>
         <button class="secondary-button" onclick="deleteResource(${resource.id})">Remover</button>
       `
-      : `<span>Somente leitura</span>`;
+      : "<span>Somente leitura</span>";
 
     row.innerHTML = `
       <td>${resource.name}</td>
@@ -261,7 +235,8 @@ function updateResourcePermissions() {
   }
 }
 
-function showApp() {
+async function showApp() {
+  await loadData();
   loginSection.classList.add("hidden");
   appSection.classList.remove("hidden");
   welcomeTitle.textContent = `Bem-vindo, ${currentUser.username}`;
@@ -276,23 +251,24 @@ function showApp() {
   updateResourcePermissions();
 }
 
-loginForm.addEventListener("submit", (event) => {
+loginForm.addEventListener("submit", async (event) => {
   event.preventDefault();
 
-  const username = document.getElementById("username").value;
-  const password = document.getElementById("password").value;
+  try {
+    const username = document.getElementById("username").value;
+    const password = document.getElementById("password").value;
+    const data = await apiRequest("/api/login", {
+      method: "POST",
+      body: JSON.stringify({ username, password })
+    });
 
-  const user = users.find((item) => item.username === username && item.password === password);
-
-  if (!user) {
-    setMessage(loginMessage, "Usuario ou senha invalidos.", "error");
-    return;
+    currentUser = data.user;
+    saveSession();
+    setMessage(loginMessage, "", "");
+    await showApp();
+  } catch (error) {
+    setMessage(loginMessage, error.message, "error");
   }
-
-  currentUser = user;
-  saveSession();
-  setMessage(loginMessage, "", "");
-  showApp();
 });
 
 logoutButton.addEventListener("click", () => {
@@ -309,34 +285,27 @@ logoutButton.addEventListener("click", () => {
   appSection.classList.add("hidden");
 });
 
-checkAccessButton.addEventListener("click", () => {
-  const selectedArea = areaSelect.value;
-  const hasAccess = currentUser.allowedAreas.includes(selectedArea);
+checkAccessButton.addEventListener("click", async () => {
+  try {
+    const selectedArea = areaSelect.value;
+    const data = await apiRequest("/api/access-check", {
+      method: "POST",
+      body: JSON.stringify({
+        username: currentUser.username,
+        area: selectedArea
+      })
+    });
 
-  if (hasAccess) {
-    setMessage(accessResult, `Acesso liberado para ${selectedArea}.`, "success");
-    activities.push({
-      user: currentUser.username,
-      role: currentUser.role,
-      action: `Tentou acessar ${selectedArea}`,
-      result: "Liberado"
-    });
-  } else {
-    setMessage(accessResult, `Acesso bloqueado para ${selectedArea}.`, "error");
-    activities.push({
-      user: currentUser.username,
-      role: currentUser.role,
-      action: `Tentou acessar ${selectedArea}`,
-      result: "Bloqueado"
-    });
+    setMessage(accessResult, data.message, data.allowed ? "success" : "error");
+    await loadData();
+    updateDashboard();
+    renderActivities();
+  } catch (error) {
+    setMessage(accessResult, error.message, "error");
   }
-
-  saveDatabase();
-  updateDashboard();
-  renderActivities();
 });
 
-resourceForm.addEventListener("submit", (event) => {
+resourceForm.addEventListener("submit", async (event) => {
   event.preventDefault();
 
   if (!canManageResources()) {
@@ -344,41 +313,37 @@ resourceForm.addEventListener("submit", (event) => {
     return;
   }
 
-  const id = Number(resourceId.value);
-  const resourceData = {
-    name: resourceName.value,
-    type: resourceType.value,
-    status: resourceStatus.value
-  };
+  try {
+    const id = Number(resourceId.value);
+    const payload = {
+      actor: currentUser.username,
+      name: resourceName.value,
+      type: resourceType.value,
+      status: resourceStatus.value
+    };
 
-  if (id) {
-    resources = resources.map((item) => item.id === id ? { id, ...resourceData } : item);
-    setMessage(resourceMessage, "Recurso atualizado com sucesso.", "success");
-    activities.push({
-      user: currentUser.username,
-      role: currentUser.role,
-      action: `Atualizou recurso ${resourceData.name}`,
-      result: "Sucesso"
-    });
-  } else {
-    resources.push({
-      id: Date.now(),
-      ...resourceData
-    });
-    setMessage(resourceMessage, "Recurso cadastrado com sucesso.", "success");
-    activities.push({
-      user: currentUser.username,
-      role: currentUser.role,
-      action: `Cadastrou recurso ${resourceData.name}`,
-      result: "Sucesso"
-    });
+    if (id) {
+      await apiRequest(`/api/resources/${id}`, {
+        method: "PUT",
+        body: JSON.stringify(payload)
+      });
+      setMessage(resourceMessage, "Recurso atualizado com sucesso.", "success");
+    } else {
+      await apiRequest("/api/resources", {
+        method: "POST",
+        body: JSON.stringify(payload)
+      });
+      setMessage(resourceMessage, "Recurso cadastrado com sucesso.", "success");
+    }
+
+    await loadData();
+    resetResourceForm();
+    updateDashboard();
+    renderResources();
+    renderActivities();
+  } catch (error) {
+    setMessage(resourceMessage, error.message, "error");
   }
-
-  saveDatabase();
-  resetResourceForm();
-  updateDashboard();
-  renderResources();
-  renderActivities();
 });
 
 cancelEditButton.addEventListener("click", () => {
@@ -405,45 +370,61 @@ window.editResource = function editResource(id) {
   setMessage(resourceMessage, "Editando recurso selecionado.", "warning");
 };
 
-window.deleteResource = function deleteResource(id) {
+window.deleteResource = async function deleteResource(id) {
   if (!canManageResources()) {
     setMessage(resourceMessage, "Seu perfil nao pode remover recursos.", "error");
     return;
   }
 
-  const resource = resources.find((item) => item.id === id);
-  resources = resources.filter((item) => item.id !== id);
+  try {
+    await apiRequest(`/api/resources/${id}`, {
+      method: "DELETE",
+      body: JSON.stringify({ actor: currentUser.username })
+    });
 
-  setMessage(resourceMessage, "Recurso removido com sucesso.", "success");
-  activities.push({
-    user: currentUser.username,
-    role: currentUser.role,
-    action: `Removeu recurso ${resource ? resource.name : id}`,
-    result: "Sucesso"
-  });
-
-  saveDatabase();
-  resetResourceForm();
-  updateDashboard();
-  renderResources();
-  renderActivities();
+    setMessage(resourceMessage, "Recurso removido com sucesso.", "success");
+    await loadData();
+    resetResourceForm();
+    updateDashboard();
+    renderResources();
+    renderActivities();
+  } catch (error) {
+    setMessage(resourceMessage, error.message, "error");
+  }
 };
 
-resetDatabaseButton.addEventListener("click", () => {
+resetDatabaseButton.addEventListener("click", async () => {
   if (!canManageResources()) {
     return;
   }
 
-  resetDatabase();
-  setMessage(resourceMessage, "Banco local restaurado com os dados iniciais.", "success");
-  updateDashboard();
-  renderResources();
-  renderActivities();
+  try {
+    await apiRequest("/api/reset", {
+      method: "POST",
+      body: JSON.stringify({ actor: currentUser.username })
+    });
+
+    await loadData();
+    setMessage(resourceMessage, "Banco de dados restaurado com os dados iniciais.", "success");
+    updateDashboard();
+    renderResources();
+    renderActivities();
+  } catch (error) {
+    setMessage(resourceMessage, error.message, "error");
+  }
 });
 
-loadDatabase();
-loadSession();
+async function initializeApp() {
+  try {
+    await loadConfig();
+    loadSession();
 
-if (currentUser) {
-  showApp();
+    if (currentUser) {
+      await showApp();
+    }
+  } catch (error) {
+    setMessage(loginMessage, "Nao foi possivel iniciar o sistema.", "error");
+  }
 }
+
+initializeApp();

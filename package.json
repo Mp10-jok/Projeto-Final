@@ -1,0 +1,9 @@
+{
+  "name": "wayne-security-system",
+  "version": "1.0.0",
+  "description": "Sistema simples de seguranca com backend local",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  }
+}
